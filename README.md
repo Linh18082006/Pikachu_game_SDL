@@ -26,3 +26,4 @@ Một số đường dẫn tìm hình ảnh :   + https://www.reddit.com/r/pokem
                                   + Ảnh do textstudio.com tạo ra chỉ cần nhập từ muốn tạo.
                                   + Nhiều ảnh do AI tạo như ảnh nền, ảnh cầu vồng, ảnh chữ.
 Số điểm mong muốn : 9 - 10 điểm. ( Lý do chủ yếu : Mặc dù game không có quá nhiều chức năng hay hoạt ảnh di động nhưng đa phần là tự làm và sắp xếp, có nhiều phần yêu cầu sự sắp xếp đặc biệt để thỏa mãn về mặt hiển thị, thuật toán, logic và khả năng chạy của chương trình không bị trùng lặp hay quá tải ).
+# Pikachu_game_SDL

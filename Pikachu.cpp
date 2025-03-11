@@ -583,6 +583,7 @@ bool isRunning = true, isRun = 0;
 
 bool isLeaderboardOpen = false;
 bool isTutorial = false;
+bool click_tutorial = 0;
 
 bool next = 0;
 
@@ -879,7 +880,7 @@ void HandleEvents(SDL_Event &event) {
             int x, y;
             SDL_GetMouseState(&x, &y);
             if (x >= buttonPlay.x && x <= buttonPlay.x + buttonPlay.w && y >= buttonPlay.y && y <= buttonPlay.y + buttonPlay.h) {
-                if(playerName.size() != 0 && enterPressed == 1)
+                if(playerName.size() != 0 && enterPressed == 1 && click_tutorial)
                 {
                     Mix_PlayChannel(-1, sound_click, 0);
                     Mix_VolumeChunk(sound_click, 128);
@@ -905,6 +906,7 @@ void HandleEvents(SDL_Event &event) {
                 Mix_PlayChannel(-1, sound_click, 0);
                 Mix_VolumeChunk(sound_click, 128);
                 if (!isTutorial) {
+                    click_tutorial = 1;
                     std::thread leaderboardThread(showTutorialboardWindow);
                     leaderboardThread.detach();
                 }
