@@ -40,7 +40,10 @@ SDL_Texture* Pause = nullptr;
 SDL_Texture* Restart = nullptr;
 
 Mix_Music* music = nullptr;
-Mix_Chunk* sound = nullptr;
+Mix_Chunk* sound_click = nullptr;
+Mix_Chunk* sound_wrong_click = nullptr;
+Mix_Chunk* sound_correct_click = nullptr;
+Mix_Chunk* sound_error_click = nullptr;
 
 const int TILE_SIZE = 50;
 const int ROWS = 10;
@@ -74,6 +77,14 @@ SDL_Texture* LoadTexture(const std::string &file, SDL_Renderer* renderer) {
     texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
     SDL_FreeSurface(loadedSurface);
     return texture;
+}
+
+void Mix_FreeChunks()
+{
+    Mix_FreeChunk(sound_click);
+    Mix_FreeChunk(sound_correct_click);
+    Mix_FreeChunk(sound_error_click);
+    Mix_FreeChunk(sound_wrong_click);
 }
 
 void PresentBox(int w, SDL_Texture* s)
@@ -586,6 +597,10 @@ int main(int argc, char* argv[]) {
     Time = LoadTexture("Time.png", renderer);
 
     music = Mix_LoadMUS("background.mp3");
+    sound_click = Mix_LoadWAV("select_click.wav");
+    sound_wrong_click = Mix_LoadWAV("wrong.wav");;
+    sound_correct_click = Mix_LoadWAV("correct.wav");;
+    sound_error_click = Mix_LoadWAV("click-error.wav");;
     // sound = Mix_LoadWAV()
 
     for (int i = 1; i <= 40; i++) {
@@ -608,7 +623,7 @@ int main(int argc, char* argv[]) {
 
     while(running == 1 || restart == 1){
         Mix_PlayMusic(music, -1);
-        Mix_VolumeMusic(120);
+        Mix_VolumeMusic(5);
         InitBoard();
         restart = 0;
         bool ktra = 0, needRender = 0, run = 0, run_first = 0;
@@ -643,15 +658,22 @@ int main(int argc, char* argv[]) {
                 TTF_CloseFont(font);
                 TTF_Quit();
                 Mix_FreeMusic(music);
-                Mix_FreeChunk(sound);
+                Mix_FreeChunks();
                 Mix_CloseAudio();
                 End_game();
             }
             if(SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) running = false;
                 else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                    if(cnt_pr % 2 == 0 && cnt == 0 && event.button.x >= 100 && event.button.x <= 900 && event.button.y >= 180 && event.button.y <= 680)
+                    if(cnt_pr % 2 == 1 && (event.button.x < 920 || event.button.x > 970 || event.button.y < 400 || event.button.y > 450))
                     {
+                        Mix_PlayChannel(-1, sound_error_click, 0);
+                        Mix_VolumeChunk(sound_error_click, 128);
+                    }
+                    else if(cnt_pr % 2 == 0 && cnt == 0 && event.button.x >= 100 && event.button.x <= 900 && event.button.y >= 180 && event.button.y <= 680)
+                    {
+                        Mix_PlayChannel(-1, sound_click, 0);
+                        Mix_VolumeChunk(sound_click, 128);
                         FirstClick(event.button.x, event.button.y);
                         if(board[first_click.f][first_click.s] == -1) continue;
                         cnt++;
@@ -663,6 +685,8 @@ int main(int argc, char* argv[]) {
                     }
                     else if(cnt_pr % 2 == 0 && cnt == 1 && event.button.x >= 10 && event.button.x <= 900 && event.button.y >= 180 && event.button.y <= 680)
                     {
+                        Mix_PlayChannel(-1, sound_click, 0);
+                        Mix_VolumeChunk(sound_click, 128);
                         bool check_change = 0;
                         pauseStart = SDL_GetTicks();
                         while(check_change == 0){
@@ -685,17 +709,25 @@ int main(int argc, char* argv[]) {
 
                                 if(Game_Play(first_click, second_click) == 1)
                                 {
-                                    
+                                    Mix_PlayChannel(-1, sound_correct_click, 0);
+                                    Mix_VolumeChunk(sound_correct_click, 128);
                                     board[first_click.f][first_click.s] = -1;
                                     board[second_click.f][second_click.s] = -1;
                                 }
-                                else if(first_click.f != second_click.f || first_click.s != second_click.s) save_cnt_wrong--; 
+                                else if(first_click.f != second_click.f || first_click.s != second_click.s)
+                                {
+                                    Mix_PlayChannel(-1, sound_wrong_click, 0);
+                                    Mix_VolumeChunk(sound_wrong_click, 128);
+                                    save_cnt_wrong--; 
+                                }
                                 cnt = 0;
                             }
                         }
                     }
                     else if(cnt_pr % 2 == 0 && cnt_help > 0 && event.button.x >= 870 && event.button.x <= 910 && event.button.y >= 700 && event.button.y <= 740)
                     {
+                        Mix_PlayChannel(-1, sound_click, 0);
+                        Mix_VolumeChunk(sound_click, 128);
                         cnt_help--;
                         bool check_change = 0;
                         pauseStart = SDL_GetTicks();
@@ -703,15 +735,15 @@ int main(int argc, char* argv[]) {
                         std::pair < std::pair < int, int >, std::pair < int, int > > save_help = HELP_HANG_COT();
                         while(check_change == 0){
                             cnt++;
-                            std::ofstream logFile("debug.log", std::ios::app);
-                            logFile << cnt << std::endl;
+                            // std::ofstream logFile("debug.log", std::ios::app);
+                            // logFile << cnt << std::endl;
 
                             SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                             SDL_RenderClear(renderer);
                             RenderBoard_Help(save_help, save_cnt_wrong);
                             SDL_RenderPresent(renderer);
                             if(SDL_GetTicks() - pauseStart > 1000) check_change = 1;
-                            logFile.close();
+                            // logFile.close();
                         }
 
                         // check_help = 0;
@@ -732,6 +764,8 @@ int main(int argc, char* argv[]) {
                     }
                     else if(cnt_pr % 2 == 0 && event.button.x >= 25 && event.button.x <= 75 && event.button.y >= 400 && event.button.y <= 450)
                     {
+                        Mix_PlayChannel(-1, sound_click, 0);
+                        Mix_VolumeChunk(sound_click, 128);
                         restart = 1;
                         break;
                     }
@@ -750,7 +784,7 @@ int main(int argc, char* argv[]) {
     TTF_CloseFont(font);
     TTF_Quit();
     Mix_FreeMusic(music);
-    Mix_FreeChunk(sound);
+    Mix_FreeChunks();
     Mix_CloseAudio();
     
     return 0;
