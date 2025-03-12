@@ -18,7 +18,7 @@
 #include <fstream>
 
 #include "initSDL.h"
-#include "End_game.h"
+#include "declare.h"
 
 const int DISTANCE_H = 180;
 const int DISTANCE_W = 100;
@@ -29,31 +29,9 @@ const int TIMER_HEIGHT = 50;
 const int GAME_TIME = 1200000 + 2000; 
 const std::string WINDOW_TITLE = "Pikachu";
 
-std::vector<SDL_Texture*> textures, textures_red, textures_green;
-SDL_Texture* HELP = nullptr;
-SDL_Texture* Back_ground = nullptr;
-SDL_Texture* Black = nullptr;
-SDL_Texture* Heart = nullptr;
-SDL_Texture* Time = nullptr;
-SDL_Texture* Resume = nullptr;
-SDL_Texture* Pause = nullptr;
-SDL_Texture* Restart = nullptr;
-
-Mix_Music* music = nullptr;
-Mix_Chunk* sound_click = nullptr;
-Mix_Chunk* sound_wrong_click = nullptr;
-Mix_Chunk* sound_correct_click = nullptr;
-Mix_Chunk* sound_error_click = nullptr;
-
 const int TILE_SIZE = 50;
 const int ROWS = 10;
 const int COLS = 16;
-
-SDL_Window* window = nullptr;
-SDL_Renderer* renderer = nullptr;
-TTF_Font* font = nullptr;
-TTF_Font* font_times = nullptr;
-TTF_Font* font_number = nullptr;
 
 std::vector<std::vector<int>> board, save_board;
 std::vector < std::string > Time_present;
@@ -66,26 +44,6 @@ int cnt_help = 5, save_cnt_wrong = 5;
 int cnt = 0, cnt_pr = 0;
 int lastUpdateTime, startTime, start_pause;
 bool win = 0;
-
-SDL_Texture* LoadTexture(const std::string &file, SDL_Renderer* renderer) {
-    SDL_Texture* texture = nullptr;
-    SDL_Surface* loadedSurface = IMG_Load(file.c_str()); // Hoặc SDL_image nếu dùng PNG
-    if (loadedSurface == nullptr) {
-        std::cout << "Failed to load image " << file << " SDL Error: " << SDL_GetError() << std::endl;
-        return nullptr;
-    }
-    texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
-    SDL_FreeSurface(loadedSurface);
-    return texture;
-}
-
-void Mix_FreeChunks()
-{
-    Mix_FreeChunk(sound_click);
-    Mix_FreeChunk(sound_correct_click);
-    Mix_FreeChunk(sound_error_click);
-    Mix_FreeChunk(sound_wrong_click);
-}
 
 void PresentBox(int w, SDL_Texture* s)
 {
@@ -194,20 +152,6 @@ void PreparePresentBoard(int times_wrong)
 
     SDL_FreeSurface(textSurface);
     SDL_DestroyTexture(textTexture);
-}
-
-std::vector<std::string> milliseconds_to_mmss(int milliseconds) {
-    int total_seconds = milliseconds / 1000;
-    int minutes = total_seconds / 60;
-    int seconds = total_seconds % 60;
-    
-    std::vector<std::string> result;
-    result.push_back(std::to_string(minutes / 10));
-    result.push_back(std::to_string(minutes % 10));
-    result.push_back(std::to_string(seconds / 10));
-    result.push_back(std::to_string(seconds % 10));
-    
-    return result;
 }
 
 void PresentTime(const char* str, int stt)
@@ -579,7 +523,7 @@ std::pair<std::pair<int, int>, std::pair<int, int>> HELP_HANG_COT()
 }
 
 int main(int argc, char* argv[]) {
-
+    srand(0);
     initSDL(window, renderer);
     mixer();
     TTF_Init();
@@ -597,6 +541,8 @@ int main(int argc, char* argv[]) {
     Time = LoadTexture("Time.png", renderer);
 
     music = Mix_LoadMUS("background.mp3");
+    plane_sound = Mix_LoadWAV("plane_sound.wav");
+    stone_sound = Mix_LoadWAV("stone_sound.wav");
     sound_click = Mix_LoadWAV("select_click.wav");
     sound_wrong_click = Mix_LoadWAV("wrong.wav");;
     sound_correct_click = Mix_LoadWAV("correct.wav");;
@@ -638,13 +584,13 @@ int main(int argc, char* argv[]) {
         Uint32 pauseStart = 0; // Biến lưu thời gian bắt đầu tạm dừng
         lastUpdateTime = SDL_GetTicks();
         save_cnt_wrong = 5;
-        while(save_cnt_wrong > 0 && running){
+        while(save_cnt_wrong > -1 && running){
             ktra = 0;
             for(int i = 0; i < ROWS; ++i)
             {
                 for(int j = 0; j < COLS; j++)
                 {
-                    if(board[i][j] != -1)
+                    if(board[i][j] == -1)
                     {
                         ktra = 1;
                         break;
@@ -652,15 +598,198 @@ int main(int argc, char* argv[]) {
                 }
                 if(ktra == 1) break;
             }
-            if(ktra == 0)
+            if(ktra == 1)
             {
-                quitSDL(window, renderer);
-                TTF_CloseFont(font);
-                TTF_Quit();
-                Mix_FreeMusic(music);
-                Mix_FreeChunks();
-                Mix_CloseAudio();
-                End_game();
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderClear(renderer);
+
+                SDL_Texture* plane = nullptr;
+                SDL_Texture* rainbow = nullptr;
+                SDL_Texture* gameWin = nullptr;
+
+                plane = LoadTexture("plane.png", renderer);
+                rainbow = LoadTexture("rainbow.png", renderer);
+                gameWin = LoadTexture("game_win.png", renderer);
+
+
+                const int screenWidth = 1000, screenHeight = 800;
+                int planeX = -500, planeY = 300;
+                int rainbowX = -1200, rainbowY = 500;
+                int gameWinX = 80, gameWinY = -450;
+                bool gameWinFalling = false;
+                int a = 0;
+                
+                bool runningg = true, cnt_sound = 0;
+                Mix_PlayChannel(-1, plane_sound, 0);
+                Mix_VolumeChunk(plane_sound, 128);
+                while (runningg) {
+                    SDL_Event event;
+                    if(SDL_PollEvent(&event)) {
+                        if (event.type == SDL_QUIT) return 0;
+                        else if(event.type == SDL_MOUSEBUTTONDOWN)
+                        {
+                            if(event.button.x >= 475 && event.button.x <= 525 && event.button.y >= 620 && event.button.y <= 670)
+                            {
+                                Mix_PlayChannel(-1, sound_click, 0);
+                                Mix_VolumeChunk(sound_click, 128);
+                                runningg = 0;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Di chuyển máy bay
+                    if (planeX < screenWidth) {
+                        planeX += 10;
+                        if(planeX >= -100) rainbowX += 10;
+                    } else {
+                        gameWinFalling = true;
+                    }
+
+                    bool check = 0;
+                    
+                    // Hiệu ứng chữ "Game Over" rơi xuống
+                    if (gameWinFalling) {
+                        if(cnt_sound == 0)
+                        {
+                            cnt_sound = 1;
+                            Mix_PlayChannel(-1, stone_sound, 0);
+                            Mix_VolumeChunk(stone_sound, 128);
+
+                        }
+                        if (gameWinY < rainbowY - 420) {
+                            gameWinY += 50;
+                        }
+                        else
+                        {
+                            check = 1;
+                            // Mix_PlayChannel(-1, sound_click, 0);
+                            // Mix_VolumeChunk(sound_click, 128);
+                        }
+                    }
+                    SDL_Rect rainbowRect = {rainbowX, rainbowY, 1200, 100};
+                    SDL_Rect gameWinRect = {gameWinX, gameWinY, 800, 450};
+                    
+                    SDL_RenderClear(renderer);
+                    SDL_RenderCopy(renderer, Back_ground, NULL, NULL);
+                    SDL_Rect planeRect = {planeX, planeY, 500, 400};
+                    SDL_RenderCopy(renderer, plane, NULL, &planeRect);
+                    if(planeX >= -100) SDL_RenderCopy(renderer, rainbow, NULL, &rainbowRect);
+                    gameWinRect.y = gameWinY;
+                    if(gameWinFalling) SDL_RenderCopy(renderer, gameWin, NULL, &gameWinRect);
+                    if(check == 1)
+                    {
+                        SDL_Rect tiless = {475, 620, 50, 50};   
+                        SDL_RenderCopy(renderer, Restart, NULL, &tiless);
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawRect(renderer, &tiless);
+                    }
+                    SDL_RenderPresent(renderer);
+                    SDL_Delay(16);
+                }
+                if(runningg == 0)
+                {
+                    cnt_help = 5;
+                    restart = 1;
+                    break;
+                }
+            }
+            if(save_cnt_wrong == 0)
+            {
+
+                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                SDL_RenderClear(renderer);
+
+                SDL_Texture* plane = nullptr;
+                SDL_Texture* rainbow = nullptr;
+                SDL_Texture* gameOver = nullptr;
+
+                plane = LoadTexture("plane.png", renderer);
+                rainbow = LoadTexture("rainbow.png", renderer);
+                gameOver = LoadTexture("game_over.png", renderer);
+
+
+                const int screenWidth = 1000, screenHeight = 800;
+                int planeX = -500, planeY = 300;
+                int rainbowX = -1200, rainbowY = 500;
+                int gameOverX = 100, gameOverY = -450;
+                bool gameOverFalling = false;
+                int a = 0;
+                
+                bool runningg = true, cnt_sound = 0;
+                Mix_PlayChannel(-1, plane_sound, 0);
+                Mix_VolumeChunk(plane_sound, 128);
+                while (runningg) {
+                    SDL_Event event;
+                    if(SDL_PollEvent(&event)) {
+                        if (event.type == SDL_QUIT) return 0;
+                        else if(event.type == SDL_MOUSEBUTTONDOWN)
+                        {
+                            if(event.button.x >= 475 && event.button.x <= 525 && event.button.y >= 620 && event.button.y <= 670)
+                            {
+                                Mix_PlayChannel(-1, sound_click, 0);
+                                Mix_VolumeChunk(sound_click, 128);
+                                runningg = 0;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    // Di chuyển máy bay
+                    if (planeX < screenWidth) {
+                        planeX += 10;
+                        if(planeX >= -100) rainbowX += 10;
+                    } else {
+                        gameOverFalling = true;
+                    }
+
+                    bool check = 0;
+                    
+                    // Hiệu ứng chữ "Game Over" rơi xuống
+                    if (gameOverFalling) {
+                        if(cnt_sound == 0)
+                        {
+                            cnt_sound = 1;
+                            Mix_PlayChannel(-1, stone_sound, 0);
+                            Mix_VolumeChunk(stone_sound, 128);
+
+                        }
+                        if (gameOverY < rainbowY - 350) {
+                            gameOverY += 50;
+                        }
+                        else
+                        {
+                            check = 1;
+                            // Mix_PlayChannel(-1, sound_click, 0);
+                            // Mix_VolumeChunk(sound_click, 128);
+                        }
+                    }
+                    SDL_Rect rainbowRect = {rainbowX, rainbowY, 1200, 100};
+                    SDL_Rect gameOverRect = {gameOverX, gameOverY, 800, 450};
+                    
+                    SDL_RenderClear(renderer);
+                    SDL_RenderCopy(renderer, Back_ground, NULL, NULL);
+                    SDL_Rect planeRect = {planeX, planeY, 500, 400};
+                    SDL_RenderCopy(renderer, plane, NULL, &planeRect);
+                    if(planeX >= -100) SDL_RenderCopy(renderer, rainbow, NULL, &rainbowRect);
+                    gameOverRect.y = gameOverY;
+                    if(gameOverFalling) SDL_RenderCopy(renderer, gameOver, NULL, &gameOverRect);
+                    if(check == 1)
+                    {
+                        SDL_Rect tiless = {475, 620, 50, 50};   
+                        SDL_RenderCopy(renderer, Restart, NULL, &tiless);
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                        SDL_RenderDrawRect(renderer, &tiless);
+                    }
+                    SDL_RenderPresent(renderer);
+                    SDL_Delay(16);
+                }
+                if(runningg == 0)
+                {
+                    cnt_help = 5;
+                    restart = 1;
+                    break;
+                }
             }
             if(SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) running = false;
@@ -750,6 +879,8 @@ int main(int argc, char* argv[]) {
                     }
                     else if(event.button.x >= 920 && event.button.x <= 970 && event.button.y >= 400 && event.button.y <= 450)
                     {
+                        Mix_PlayChannel(-1, sound_click, 0);
+                        Mix_VolumeChunk(sound_click, 128);
                         cnt_pr++;
                         if(cnt_pr % 2 == 1)
                         {
@@ -766,6 +897,7 @@ int main(int argc, char* argv[]) {
                     {
                         Mix_PlayChannel(-1, sound_click, 0);
                         Mix_VolumeChunk(sound_click, 128);
+                        cnt_help = 5;
                         restart = 1;
                         break;
                     }

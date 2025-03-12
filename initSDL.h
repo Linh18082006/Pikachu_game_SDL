@@ -34,6 +34,18 @@ void initSDL(SDL_Window* &window, SDL_Renderer* &renderer)
 
 }
 
+SDL_Texture* LoadTexture(const std::string &file, SDL_Renderer* renderer) {
+    SDL_Texture* texture = nullptr;
+    SDL_Surface* loadedSurface = IMG_Load(file.c_str()); // Hoặc SDL_image nếu dùng PNG
+    if (loadedSurface == nullptr) {
+        std::cout << "Failed to load image " << file << " SDL Error: " << SDL_GetError() << std::endl;
+        return nullptr;
+    }
+    texture = SDL_CreateTextureFromSurface(renderer, loadedSurface);
+    SDL_FreeSurface(loadedSurface);
+    return texture;
+}
+
 void quitSDL(SDL_Window* window, SDL_Renderer* renderer)
 {
     	SDL_DestroyRenderer(renderer);
@@ -44,6 +56,7 @@ void quitSDL(SDL_Window* window, SDL_Renderer* renderer)
 void mixer()
 {
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
+    Mix_AllocateChannels(16);
 }
 
 #endif 
