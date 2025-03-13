@@ -22,6 +22,8 @@ SDL_Renderer* renderer = nullptr;
 TTF_Font* font = nullptr;
 TTF_Font* font_times = nullptr;
 TTF_Font* font_number = nullptr;
+TTF_Font* font_point = nullptr;
+TTF_Font* font_name = nullptr;
 
 std::vector<SDL_Texture*> textures, textures_red, textures_green;
 SDL_Texture* HELP = nullptr;
@@ -32,9 +34,14 @@ SDL_Texture* Time = nullptr;
 SDL_Texture* Resume = nullptr;
 SDL_Texture* Pause = nullptr;
 SDL_Texture* Restart = nullptr;
+SDL_Texture* Back_ground_start = nullptr;
+SDL_Texture *Button_Play = nullptr;        
+SDL_Texture *Button_Help = nullptr;        
+SDL_Texture *Button_Score = nullptr;  
 
 Mix_Music* music = nullptr;
 Mix_Music* music_win = nullptr;
+Mix_Music* music_background = nullptr;
 Mix_Chunk* plane_sound = nullptr;
 Mix_Chunk* stone_sound = nullptr;
 Mix_Chunk* sound_click = nullptr;

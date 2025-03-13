@@ -33,6 +33,8 @@ const int TILE_SIZE = 50;
 const int ROWS = 10;
 const int COLS = 16;
 
+std::string point = "";
+
 std::vector<std::vector<int>> board, save_board;
 std::vector < std::string > Time_present;
 SDL_Point firstPick = {-1, -1};
@@ -210,11 +212,15 @@ void RenderBoard_Help(std::pair < std::pair < int, int >, std::pair < int, int >
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawRect(renderer, &black);
 
+    point = "";
+
     for(int i = 1; i <= 4; i++)
     {
+        point += Time_present[i - 1];
         const char* cText = Time_present[i - 1].c_str();
         PresentTime(cText, i);
     }
+
 
     Time_present.clear();
 
@@ -222,6 +228,13 @@ void RenderBoard_Help(std::pair < std::pair < int, int >, std::pair < int, int >
         for (int j = 0; j < COLS; ++j) {
             if(board[i][j] == -1){
                 continue;
+            }
+            else if(board[i][j] == -2)
+            {
+                SDL_Rect tiles = {DISTANCE_W + j * TILE_SIZE, DISTANCE_H + i * TILE_SIZE, TILE_SIZE, TILE_SIZE};   
+                SDL_RenderCopy(renderer, textures_red[save_color[save_board[i][j]]], NULL, &tiles);
+                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                SDL_RenderDrawRect(renderer, &tiles);
             }
             else if(((j == COT && i == HANG) || (j == COT_ && i == HANG_)))
             {
@@ -276,8 +289,11 @@ void RenderBoard(int time_wrong) {
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
     SDL_RenderDrawRect(renderer, &black);
 
+    point = "";
+
     for(int i = 1; i <= 4; i++)
     {
+        point += Time_present[i - 1];
         const char* cText = Time_present[i - 1].c_str();
         PresentTime(cText, i);
     }
@@ -522,14 +538,137 @@ std::pair<std::pair<int, int>, std::pair<int, int>> HELP_HANG_COT()
     return {{-1, -1}, {-1, -1}}; // Không tìm thấy cặp hợp lệ
 }
 
+SDL_Rect buttonPlay = {300, 300, 400, 120};
+SDL_Rect buttonHelp = {300, 450, 400, 120};
+SDL_Rect buttonScore = {300, 600, 400, 120};
+
+std::string playerName = "";
+bool enterPressed = false;
+bool isRunning = true, isRun = 0;
+
+void SavePlayerName() {
+    std::ofstream file("Player.txt", std::ios::app); // Mở file ở chế độ append
+    if (file.is_open()) {
+        file << playerName << std::endl; // Ghi tên vào dòng mới
+        file.close();
+    }
+}
+
+
+void HandleEvents(SDL_Event &event) {
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            isRunning = false;
+            isRun = 1;
+        } 
+        else if (playerName.size() <= 50 && event.type == SDL_TEXTINPUT && !enterPressed) {
+            playerName += event.text.text;
+        } 
+        else if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_BACKSPACE && !playerName.empty()) {
+                playerName.pop_back();
+            } 
+            else if (event.key.keysym.sym == SDLK_RETURN) {
+                SavePlayerName();
+                enterPressed = true;
+            }
+        }
+        else if (event.type == SDL_MOUSEBUTTONDOWN) {
+            int x, y;
+            SDL_GetMouseState(&x, &y);
+            if (x >= buttonPlay.x && x <= buttonPlay.x + buttonPlay.w && y >= buttonPlay.y && y <= buttonPlay.y + buttonPlay.h) {
+                isRunning = false;  // Nhấn Play -> Dừng vòng lặp
+            }
+        }
+    }
+}
+
+void RenderText(SDL_Renderer *renderer, TTF_Font *font) {
+    int defaultBoxWidth = 600, boxHeight = 50;  
+    int minBoxWidth = 400;
+    int maxBoxWidth = 1000; 
+    int boxX = 500 - defaultBoxWidth / 2, boxY = 200; 
+
+    if (playerName.empty()) {
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_Rect inputBox = {boxX, boxY, defaultBoxWidth, boxHeight};
+        SDL_RenderFillRect(renderer, &inputBox);
+    
+        // 2️⃣ Căn giữa chữ "Enter Name and Press Enter"
+        SDL_Color hintColor = {100, 100, 100, 255}; // Màu xám
+        SDL_Surface *hintSurface = TTF_RenderText_Solid(font, "Enter Name and Press Enter", hintColor);
+        if (hintSurface) {
+            SDL_Texture *hintTexture = SDL_CreateTextureFromSurface(renderer, hintSurface);
+    
+            int textWidth = hintSurface->w;
+            int textHeight = hintSurface->h;
+            SDL_Rect hintRect = {boxX + (defaultBoxWidth - textWidth) / 2, boxY + (boxHeight - textHeight) / 2, textWidth, textHeight};
+            SDL_RenderCopy(renderer, hintTexture, NULL, &hintRect);
+            SDL_FreeSurface(hintSurface);
+            SDL_DestroyTexture(hintTexture);
+        }
+
+        static int lastBlinkTime = 0;
+        static bool showCursor = true;
+        int currentTime = SDL_GetTicks();
+        if (currentTime > lastBlinkTime + 700) {
+            showCursor = !showCursor;
+            lastBlinkTime = currentTime;
+        }
+        if (showCursor) {
+            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_Rect cursor = {boxX + 8, boxY + 5, 2, 40};
+            SDL_RenderFillRect(renderer, &cursor);
+        }
+        return;
+    }
+
+    SDL_Color textColor = {255, 255, 255, 255};
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, playerName.c_str(), textColor);
+    if (!textSurface) return;
+    int textWidth = textSurface->w, textHeight = textSurface->h;
+    
+    int boxWidth = std::max(minBoxWidth, std::min(maxBoxWidth, textWidth + 20));
+    boxX = 500 - boxWidth / 2;
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_Rect inputBox = {boxX, boxY, boxWidth, boxHeight};
+    SDL_RenderFillRect(renderer, &inputBox);
+
+    SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    SDL_Rect textRect = {boxX + 10, boxY + (boxHeight - textHeight) / 2, textWidth, textHeight};
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+    SDL_FreeSurface(textSurface);
+    SDL_DestroyTexture(textTexture);
+
+    static Uint32 lastBlinkTime = 0;
+    static bool showCursor = true;
+    Uint32 currentTime = SDL_GetTicks();
+    if (currentTime > lastBlinkTime + 500) {
+        showCursor = !showCursor;
+        lastBlinkTime = currentTime;
+    }
+
+    if (showCursor) {
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_Rect cursor = {textRect.x + textWidth + 1, textRect.y + 5, 2, textHeight - 12};
+        SDL_RenderFillRect(renderer, &cursor);
+    }
+}
+
 int main(int argc, char* argv[]) {
     srand(0);
     initSDL(window, renderer);
     mixer();
     TTF_Init();
+
+    Back_ground_start = LoadTexture("space_art.png", renderer);
+
     font = TTF_OpenFont("orbitron-black.otf", 35);
+    font_point = TTF_OpenFont("orbitron-black.otf", 70);
     font_times = TTF_OpenFont("orbitron-black.otf", 22);
     font_number = TTF_OpenFont("arial.ttf", 35);
+    font_name = TTF_OpenFont("arial.ttf", 45);
     
     Restart = LoadTexture("restart.png", renderer);
     Resume = LoadTexture("resume_game.png", renderer);
@@ -539,8 +678,12 @@ int main(int argc, char* argv[]) {
     HELP = LoadTexture("light.png", renderer);
     Back_ground = LoadTexture("Back_ground.png", renderer);
     Time = LoadTexture("Time.png", renderer);
+    Button_Play = LoadTexture("button_play.png", renderer);
+    Button_Help = LoadTexture("button_help.png", renderer);
+    Button_Score = LoadTexture("button_rank.png", renderer);
 
     music = Mix_LoadMUS("background.mp3");
+    music_background = Mix_LoadMUS("start.mp3");
     plane_sound = Mix_LoadWAV("plane_sound.wav");
     stone_sound = Mix_LoadWAV("stone_sound.wav");
     sound_click = Mix_LoadWAV("select_click.wav");
@@ -563,11 +706,32 @@ int main(int argc, char* argv[]) {
         std::string filename = "object_" + std::to_string(i) + "_green_overlay.png"; 
         textures_green.push_back(LoadTexture(filename, renderer));
     }
+
+    bool chay = 1;
+    Mix_PlayMusic(music_background, -1);
+    Mix_VolumeMusic(50);
+    SDL_Event events;
+    while (isRunning) {
+        HandleEvents(events);
+        
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        
+        SDL_RenderCopy(renderer, Back_ground_start, NULL, NULL);
+        SDL_RenderCopy(renderer, Button_Play, NULL, &buttonPlay);
+        SDL_RenderCopy(renderer, Button_Help, NULL, &buttonHelp);
+        SDL_RenderCopy(renderer, Button_Score, NULL, &buttonScore);
+        
+        RenderText(renderer, font_name);
+        
+        SDL_RenderPresent(renderer);
+        SDL_Delay(16);
+    }
     
     bool running = true;
     bool restart = 0;
-
-    while(running == 1 || restart == 1){
+    Mix_PauseMusic();
+    while((isRun == 0 && running == 1) || restart == 1){
         Mix_PlayMusic(music, -1);
         Mix_VolumeMusic(5);
         InitBoard();
@@ -684,6 +848,26 @@ int main(int argc, char* argv[]) {
                         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                         SDL_RenderDrawRect(renderer, &tiless);
                     }
+                    
+                    if(check)
+                    {
+                        SDL_Color textColor = {255, 215, 0}; 
+                        SDL_Surface* textSurface = TTF_RenderText_Solid(font_point, point.c_str(), textColor);
+                        SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+                        SDL_Rect textRect = {300, 20, textSurface->w, textSurface->h};
+                        SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+                        SDL_FreeSurface(textSurface);
+                        SDL_DestroyTexture(textTexture);
+
+                        textColor = {255, 215, 0}; 
+                        textSurface = TTF_RenderText_Solid(font, "points", textColor);
+                        textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+                        textRect = {500, 35, textSurface->w, textSurface->h};
+                        SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+                        SDL_FreeSurface(textSurface);
+                        SDL_DestroyTexture(textTexture);
+                    }
+
                     SDL_RenderPresent(renderer);
                     SDL_Delay(16);
                 }
