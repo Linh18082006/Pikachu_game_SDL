@@ -1,5 +1,7 @@
 #ifndef DECLARE_H 
 #define DECLARE_H
+#define f first
+#define s second
 #include <SDL2/SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_mixer.h>
@@ -19,13 +21,17 @@
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
+SDL_Window* leaderboardWindow = nullptr;
+SDL_Renderer* leaderboardRenderer = nullptr;
 TTF_Font* font = nullptr;
 TTF_Font* font_times = nullptr;
 TTF_Font* font_number = nullptr;
 TTF_Font* font_point = nullptr;
 TTF_Font* font_name = nullptr;
+TTF_Font* font_number_rank = nullptr;
 
 std::vector<SDL_Texture*> textures, textures_red, textures_green;
+SDL_Texture* RANK = nullptr;
 SDL_Texture* HELP = nullptr;
 SDL_Texture* Back_ground = nullptr;
 SDL_Texture* Black = nullptr;
