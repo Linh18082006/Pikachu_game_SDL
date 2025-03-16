@@ -601,6 +601,10 @@ void Present_rank1(std::string num, std::string name, int score, int w)
 {
     Rank_present(num, 87 + w, 112);
     Rank_present(name, 138 + w, 112);
+    std::string score_s = std::to_string(score);
+    if(score_s.size() == 3) w += 14;
+    else if(score_s.size() == 2) w += 26;
+    else if(score_s.size() == 1) w += 47;
     Rank_present(std::to_string(score), 210 + w, 72);
 }
 
@@ -608,6 +612,10 @@ void Present_rank2(std::string num, std::string name, int score, int w)
 {
     Rank_present(num, 87 + w, 270);
     Rank_present(name, 138 + w, 270);
+    std::string score_s = std::to_string(score);
+    if(score_s.size() == 3) w += 14;
+    else if(score_s.size() == 2) w += 26;
+    else if(score_s.size() == 1) w += 47;
     Rank_present(std::to_string(score), 210 + w, 230);
 }
 
@@ -615,6 +623,10 @@ void Present_rank3(std::string num, std::string name, int score, int w)
 {
     Rank_present(num, 87 + w, 428);
     Rank_present(name, 138 + w, 428);
+    std::string score_s = std::to_string(score);
+    if(score_s.size() == 3) w += 14;
+    else if(score_s.size() == 2) w += 26;
+    else if(score_s.size() == 1) w += 47;
     Rank_present(std::to_string(score), 210 + w, 388);
 }
 
@@ -622,6 +634,10 @@ void Present_rank4(std::string num, std::string name, int score, int w)
 {
     Rank_present(num, 87 + w, 610);
     Rank_present(name, 138 + w, 610);
+    std::string score_s = std::to_string(score);
+    if(score_s.size() == 3) w += 14;
+    else if(score_s.size() == 2) w += 26;
+    else if(score_s.size() == 1) w += 47;
     Rank_present(std::to_string(score), 210 + w, 570);
 }
 

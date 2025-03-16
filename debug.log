@@ -1,1 +1,0 @@
-SDL_RenderCopy Error: SDL_CaptureMouse() must be called on the main thread
