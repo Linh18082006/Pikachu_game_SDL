@@ -879,7 +879,11 @@ void HandleEvents(SDL_Event &event) {
             int x, y;
             SDL_GetMouseState(&x, &y);
             if (x >= buttonPlay.x && x <= buttonPlay.x + buttonPlay.w && y >= buttonPlay.y && y <= buttonPlay.y + buttonPlay.h) {
+<<<<<<< HEAD
                 if(playerName.size() != 0 && enterPressed == 1)
+=======
+                if(playerName.size() != 0 && enterPressed == 1 && click_tutorial == 1)
+>>>>>>> 475dd30 (Initial commit.)
                 {
                     Mix_PlayChannel(-1, sound_click, 0);
                     Mix_VolumeChunk(sound_click, 128);
