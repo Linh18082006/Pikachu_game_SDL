@@ -582,6 +582,7 @@ bool enterPressed = false;
 bool isRunning = true, isRun = 0;
 
 bool isLeaderboardOpen = false;
+bool isTutorial = false;
 
 bool next = 0;
 
@@ -625,7 +626,7 @@ void Present_rank4(std::string num, std::string name, int score, int w)
 }
 
 void showLeaderboardWindow(const std::string &filename) {
-    if (isLeaderboardOpen) return; // Nếu cửa sổ đã mở, không tạo lại
+    if (isLeaderboardOpen) return;
 
     leaderboardWindow = SDL_CreateWindow("Leaderboard", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1500, 750, SDL_WINDOW_SHOWN);
     leaderboardRenderer = SDL_CreateRenderer(leaderboardWindow, -1, SDL_RENDERER_ACCELERATED);
@@ -729,6 +730,114 @@ void showLeaderboardWindow(const std::string &filename) {
 
 }
 
+void RenderTutorial(TTF_Font* font) {
+
+    SDL_RenderCopy(tutorialboardRenderer, Back_ground_tutorial, NULL, NULL);
+
+    SDL_Rect Rende = {300, 0, 400, 100};
+    SDL_RenderCopy(tutorialboardRenderer, Tutorial_Render, NULL, &Rende);
+
+    SDL_Color textColor = {255, 255, 255, 255};
+    int x = 50, y = 90;
+    int spacing = 20; 
+    int iconSize = 50;
+    int maxWidth = 1000; 
+    int cnt_Tutorial = 0;
+    
+    struct TextSegment {
+        std::string text;
+        SDL_Texture* icon;
+    };
+    
+    std::vector<TextSegment> tutorialText = {
+        {"This game is exactly like the classic Pokemon Puzzle but with slightly easier gameplay.", nullptr},
+        {"The gameplay is simple as follows:", nullptr},
+        {"Instead of requiring 1-2 bends like in the classic game, this game ONLY requires a valid path between two matching tiles. Of course, paths along the outer edges of the board are also allowed.", nullptr},
+        {"In each level, you have 5 wrong attempts and 5 hints ", Help_Tutorial},
+        {"The game duration is 20 minutes. You can pause the game ", Pause_Tutorial},
+        {"or restart it if you want", Restart_Tutorial},
+        {"As your score is only recorded when you win or lose.", nullptr},
+        {"When the game ends, you can replay by pressing ", Restart_Tutorial},
+        {"Enjoy the game! Have fun!.", nullptr},
+        {"(Bonus: Click the 'X' in the top right corner to close the ranking board and tutorial board.)", nullptr}
+    };
+    
+    for (auto& segment : tutorialText) {
+        int currentX = 10;
+
+        if (segment.icon) {
+            cnt_Tutorial++;
+            if(cnt_Tutorial == 1)
+            {
+                SDL_Rect iconRect = {720, y - 5, 50, 50};
+                SDL_RenderCopy(tutorialboardRenderer, segment.icon, NULL, &iconRect);
+            }
+            else if(cnt_Tutorial == 2)
+            {
+                SDL_Rect iconRect = {805, y - 5, 50, 50};
+                SDL_RenderCopy(tutorialboardRenderer, segment.icon, NULL, &iconRect);
+            }
+            else if(cnt_Tutorial == 3)
+            {
+                SDL_Rect iconRect = {315, y - 5, 50, 50};
+                SDL_RenderCopy(tutorialboardRenderer, segment.icon, NULL, &iconRect);
+            }
+            else if(cnt_Tutorial == 4)
+            {
+                SDL_Rect iconRect = {680, y - 5, 50, 50};
+                SDL_RenderCopy(tutorialboardRenderer, segment.icon, NULL, &iconRect);
+            }
+        }
+        
+        if (!segment.text.empty()) {
+            SDL_Surface* textSurface = TTF_RenderText_Blended_Wrapped(font, segment.text.c_str(), textColor, maxWidth);
+            SDL_Texture* textTexture = SDL_CreateTextureFromSurface(tutorialboardRenderer, textSurface);
+            SDL_Rect textRect = {currentX, y, textSurface->w, textSurface->h};
+            SDL_RenderCopy(tutorialboardRenderer, textTexture, NULL, &textRect);
+            y += textSurface->h + spacing;
+            SDL_FreeSurface(textSurface);
+            SDL_DestroyTexture(textTexture);
+        }
+
+    }
+    SDL_RenderPresent(tutorialboardRenderer);
+}
+
+
+void showTutorialboardWindow()
+{
+    if (isTutorial) return;
+
+    tutorialboardWindow = SDL_CreateWindow("Tutorialboard", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1000, 800, SDL_WINDOW_SHOWN);
+    tutorialboardRenderer = SDL_CreateRenderer(tutorialboardWindow, -1, SDL_RENDERER_ACCELERATED);
+    
+    Tutorial_Render = LoadTexture("Tutorial_render.png", tutorialboardRenderer);
+    Restart_Tutorial = LoadTexture("restart.png", tutorialboardRenderer);
+    Help_Tutorial = LoadTexture("light.png", tutorialboardRenderer);
+    Pause_Tutorial = LoadTexture("pause_game.png", tutorialboardRenderer);
+    Back_ground_tutorial = LoadTexture("back_ground_tutorial.png", tutorialboardRenderer);
+
+    isTutorial = true;
+
+    while(isTutorial)
+    {
+        SDL_Event e;
+        while(SDL_PollEvent(&e)){
+            if (e.type == SDL_QUIT || (e.type == SDL_WINDOWEVENT && e.window.event == SDL_WINDOWEVENT_CLOSE)) {
+                isTutorial = false;
+            }
+        }
+        RenderTutorial(font_tutorial);
+    }
+
+    SDL_DestroyRenderer(tutorialboardRenderer);
+    SDL_DestroyWindow(tutorialboardWindow);
+    tutorialboardWindow = nullptr;
+    tutorialboardRenderer = nullptr;
+    isTutorial = false;
+    
+}
+
 void HandleEvents(SDL_Event &event) {
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_QUIT) {
@@ -773,6 +882,15 @@ void HandleEvents(SDL_Event &event) {
                 if (!isLeaderboardOpen) {
                     std::thread leaderboardThread(showLeaderboardWindow, "player.txt");
                     leaderboardThread.detach(); // Chạy song song mà không chặn chương trình chính
+                }
+            }
+            else if(x >= buttonHelp.x && x <= buttonHelp.x + buttonHelp.w && y >= buttonHelp.y && y <= buttonHelp.y + buttonHelp.h)
+            {
+                Mix_PlayChannel(-1, sound_click, 0);
+                Mix_VolumeChunk(sound_click, 128);
+                if (!isTutorial) {
+                    std::thread leaderboardThread(showTutorialboardWindow);
+                    leaderboardThread.detach();
                 }
             }
         }
@@ -859,36 +977,6 @@ int main(int argc, char* argv[]) {
     initSDL(window, renderer);
     mixer();
     TTF_Init();
-    font_number_rank = TTF_OpenFont("orbitron-black.otf", 40);
-
-    Back_ground_start = LoadTexture("space_art.png", renderer);
-
-    Button_Play = LoadTexture("button_play.png", renderer);
-    Button_Help = LoadTexture("button_help.png", renderer);
-    Button_Score = LoadTexture("button_rank.png", renderer);
-
-    music_background = Mix_LoadMUS("start.mp3");
-    sound_click = Mix_LoadWAV("select_click.wav");
-    sound_wrong_click = Mix_LoadWAV("wrong.wav");
-
-    font_name = TTF_OpenFont("arial.ttf", 35);
-
-    Mix_PlayMusic(music_background, -1);
-    Mix_VolumeMusic(50);
-    SDL_Event events;
-    while (isRunning) {
-        HandleEvents(events);
-
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, Back_ground_start, NULL, NULL);
-        SDL_RenderCopy(renderer, Button_Play, NULL, &buttonPlay);
-        SDL_RenderCopy(renderer, Button_Help, NULL, &buttonHelp);
-        SDL_RenderCopy(renderer, Button_Score, NULL, &buttonScore);
-        RenderText(renderer, font_name);
-        SDL_RenderPresent(renderer);
-        SDL_Delay(16);
-    }
 
     font = TTF_OpenFont("orbitron-black.otf", 35);
     font_point = TTF_OpenFont("orbitron-black.otf", 70);
@@ -909,6 +997,38 @@ int main(int argc, char* argv[]) {
     stone_sound = Mix_LoadWAV("stone_sound.wav");
     sound_correct_click = Mix_LoadWAV("correct.wav");;
     sound_error_click = Mix_LoadWAV("click-error.wav");;
+
+    font_number_rank = TTF_OpenFont("orbitron-black.otf", 40);
+
+    Back_ground_start = LoadTexture("space_art.png", renderer);
+
+    Button_Play = LoadTexture("button_play.png", renderer);
+    Button_Help = LoadTexture("button_help.png", renderer);
+    Button_Score = LoadTexture("button_rank.png", renderer);
+
+    music_background = Mix_LoadMUS("start.mp3");
+    sound_click = Mix_LoadWAV("select_click.wav");
+    sound_wrong_click = Mix_LoadWAV("wrong.wav");
+
+    font_name = TTF_OpenFont("arial.ttf", 35);
+    font_tutorial = TTF_OpenFont("arial.ttf", 30);
+
+    Mix_PlayMusic(music_background, -1);
+    Mix_VolumeMusic(50);
+    SDL_Event events;
+    while (isRunning) {
+        HandleEvents(events);
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, Back_ground_start, NULL, NULL);
+        SDL_RenderCopy(renderer, Button_Play, NULL, &buttonPlay);
+        SDL_RenderCopy(renderer, Button_Help, NULL, &buttonHelp);
+        SDL_RenderCopy(renderer, Button_Score, NULL, &buttonScore);
+        RenderText(renderer, font_name);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(16);
+    }
     // sound = Mix_LoadWAV()
 
     for (int i = 1; i <= 40; i++) {

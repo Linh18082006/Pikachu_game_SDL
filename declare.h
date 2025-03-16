@@ -23,12 +23,15 @@ SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 SDL_Window* leaderboardWindow = nullptr;
 SDL_Renderer* leaderboardRenderer = nullptr;
+SDL_Window* tutorialboardWindow = nullptr;
+SDL_Renderer* tutorialboardRenderer = nullptr;
 TTF_Font* font = nullptr;
 TTF_Font* font_times = nullptr;
 TTF_Font* font_number = nullptr;
 TTF_Font* font_point = nullptr;
 TTF_Font* font_name = nullptr;
 TTF_Font* font_number_rank = nullptr;
+TTF_Font* font_tutorial = nullptr;
 
 std::vector<SDL_Texture*> textures, textures_red, textures_green;
 SDL_Texture* RANK = nullptr;
@@ -44,6 +47,11 @@ SDL_Texture* Back_ground_start = nullptr;
 SDL_Texture *Button_Play = nullptr;        
 SDL_Texture *Button_Help = nullptr;        
 SDL_Texture *Button_Score = nullptr;  
+SDL_Texture* Help_Tutorial = nullptr;
+SDL_Texture* Pause_Tutorial = nullptr;
+SDL_Texture* Restart_Tutorial = nullptr;
+SDL_Texture* Back_ground_tutorial = nullptr;
+SDL_Texture* Tutorial_Render = nullptr;
 
 Mix_Music* music = nullptr;
 Mix_Music* music_win = nullptr;
