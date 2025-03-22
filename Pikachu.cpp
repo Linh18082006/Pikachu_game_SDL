@@ -584,6 +584,8 @@ bool isRunning = true, isRun = 0;
 bool isLeaderboardOpen = false;
 bool isTutorial = false;
 
+bool click_tutorial = false;
+
 bool next = 0;
 
 void Rank_present(std::string x, int pos, int pos1)
@@ -879,11 +881,7 @@ void HandleEvents(SDL_Event &event) {
             int x, y;
             SDL_GetMouseState(&x, &y);
             if (x >= buttonPlay.x && x <= buttonPlay.x + buttonPlay.w && y >= buttonPlay.y && y <= buttonPlay.y + buttonPlay.h) {
-<<<<<<< HEAD
-                if(playerName.size() != 0 && enterPressed == 1)
-=======
-                if(playerName.size() != 0 && enterPressed == 1 && click_tutorial == 1)
->>>>>>> 475dd30 (Initial commit.)
+                if(playerName.size() != 0 && enterPressed == 1 && click_tutorial)
                 {
                     Mix_PlayChannel(-1, sound_click, 0);
                     Mix_VolumeChunk(sound_click, 128);
