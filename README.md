@@ -6,4 +6,4 @@ Mô tả sơ qua về game : + Game lấy ý tưởng từ game Pikachu Puzzle c
                        + Tại trang chơi chính : Có thời gian hiển thị giảm dần, hình ảnh bảng chơi, chế độ restart, chế độ trợ giúp và chế độ dừng game.
                        + Tại trang kết thúc : Có hoạt ảnh khi thắng và thua và chế độ chơi lại, xem bảng rank.
 Game sử dụng thuật toán BFS ( Tìm kiếm theo chiều rộng ) làm thuật toán chính.
-Kết hợp với việc xử lý vòng lặp để restart game và tính thời gian thực khi chơi ( GetTicks() ).
+Kết hợp với việc xử lý vòng lặp để restart game và tính thời gian thực khi chơi ( GetTicks() và thanh thời gian ).
