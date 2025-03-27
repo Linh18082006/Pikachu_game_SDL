@@ -4,6 +4,8 @@
 #include "Declare.h"
 #include "RunFunction.h"
 #include "Render_rank.h"
+#include "InitSDL.h"
+#include <unistd.h> // Thêm thư viện để sử dụng execvp
 
 void Lose()
 {
@@ -15,12 +17,18 @@ void Lose()
     int rainbowX = -1200, rainbowY = 500;
     int gameOverX = 100, gameOverY = -450;
     bool gameOverFalling = false;
-    int a = 0;
+    int a = 0, start_lose;
 
     bool runningg = true, cnt_sound = 0;
     Mix_PlayChannel(-1, plane_sound, 0);
     Mix_VolumeChunk(plane_sound, 128);
     while (runningg) {
+        if(start_lose != 0 && SDL_GetTicks() - start_lose >= 1000)
+        {
+            Mix_PlayChannel(-1, Pikachu_lose, 0);
+            Mix_VolumeChunk(Pikachu_lose, 128);
+            start_lose = 0;
+        }
         SDL_Event event;
         if(SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) exit(0);
@@ -42,6 +50,13 @@ void Lose()
                         leaderboardThread.detach(); 
                     }
                 }
+                else if (event.button.x >= 800 && event.button.x <= 1000 && event.button.y >= 0 && event.button.y <= 50) {
+                    Mix_PlayChannel(-1, sound_click, 0);
+                    Mix_VolumeChunk(sound_click, 128);
+                    char *args[] = {"D:\\Pikachu\\Sources\\main.exe", nullptr};
+                    _execvp(args[0], args);
+                    exit(0); 
+                }
             }
         }
 
@@ -60,7 +75,7 @@ void Lose()
                 cnt_sound = 1;
                 Mix_PlayChannel(-1, stone_sound, 0);
                 Mix_VolumeChunk(stone_sound, 128);
-
+                start_lose = SDL_GetTicks();
             }
             if (gameOverY < rainbowY - 350) {
                 gameOverY += 50;
@@ -86,6 +101,9 @@ void Lose()
 
             tiless = {400, 700, 200, 60};
             SDL_RenderCopy(renderer, Button_Score, NULL, &tiless);
+
+            tiless = {800, 0, 200, 50};
+            SDL_RenderCopy(renderer, Restart_Game, NULL, &tiless);
         }
         if(check)
         {

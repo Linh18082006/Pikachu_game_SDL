@@ -32,10 +32,18 @@ int main(int argc, char* argv[]) {
     SDL_Event events;
     while (isRunning) {
         HandleEvents(events);
-
+        
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, Back_ground_start, NULL, NULL);
+        if(music_check == 0) {
+            SDL_Rect tile = {950, 0, 50, 50};
+            SDL_RenderCopy(renderer, Music_On, NULL, &tile);
+        }
+        else {
+            SDL_Rect tile = {950, 0, 30, 50};
+            SDL_RenderCopy(renderer, Music_Off, NULL, &tile);
+        }
         SDL_RenderCopy(renderer, Button_Play, NULL, &buttonPlay);
         SDL_RenderCopy(renderer, Button_Help, NULL, &buttonHelp);
         SDL_RenderCopy(renderer, Button_Score, NULL, &buttonScore);

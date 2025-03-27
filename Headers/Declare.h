@@ -56,6 +56,9 @@ extern SDL_Texture* Pause_Tutorial;
 extern SDL_Texture* Restart_Tutorial;
 extern SDL_Texture* Tutorial_Render;
 extern SDL_Texture* Back_ground_tutorial;
+extern SDL_Texture* Music_On;
+extern SDL_Texture* Music_Off;
+extern SDL_Texture* Restart_Game;
 
 extern Mix_Music* music;
 extern Mix_Music* music_win;
@@ -66,6 +69,8 @@ extern Mix_Chunk* sound_click;
 extern Mix_Chunk* sound_wrong_click;
 extern Mix_Chunk* sound_correct_click;
 extern Mix_Chunk* sound_error_click;
+extern Mix_Chunk* Pikachu_lose;
+extern Mix_Chunk* Pikachu_win;
 
 extern const int ROWS;
 extern const int COLS;
@@ -87,6 +92,7 @@ extern int cnt;
 extern int lastUpdateTime, startTime, start_pause;
 extern int save_color[1000];
 extern int next_game;
+extern int music_check;
 
 extern bool check[100][100];
 extern bool check_help;

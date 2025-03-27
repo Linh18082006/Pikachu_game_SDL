@@ -40,6 +40,18 @@ void HandleEvents(SDL_Event &event) {
                     Mix_VolumeChunk(sound_wrong_click, 128);
                 }
             }
+            else if (x >= 950 && x <= 1000 && y >= 0 && y <= 50) {
+                Mix_PlayChannel(-1, sound_click, 0);
+                Mix_VolumeChunk(sound_click, 128);
+                if (music_check == 0) {
+                    Mix_PauseMusic();
+                    music_check = 1;
+                }
+                else {
+                    Mix_ResumeMusic();
+                    music_check = 0;
+                }
+            }
             else if (x >= buttonScore.x && x <= buttonScore.x + buttonScore.w && y >= buttonScore.y && y <= buttonScore.y + buttonScore.h)
             {
                 Mix_PlayChannel(-1, sound_click, 0);

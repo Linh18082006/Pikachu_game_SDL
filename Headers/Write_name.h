@@ -5,16 +5,18 @@
 //Hien thi ten va nhap ten menu
 void RenderText(SDL_Renderer *renderer, TTF_Font *font) {
     int defaultBoxWidth = 400, boxHeight = 50;
-    int minBoxWidth = 300;
-    int maxBoxWidth = 500;
     int boxX = 500 - defaultBoxWidth / 2, boxY = 200;
 
     if (playerName.empty()) {
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-        SDL_Rect inputBox = {boxX, boxY, defaultBoxWidth, boxHeight};
-        SDL_RenderFillRect(renderer, &inputBox);
 
-        SDL_Color hintColor = {100, 100, 100, 255}; 
+        SDL_Rect inputBox = {boxX, boxY, defaultBoxWidth, boxHeight};
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Set color to black
+        SDL_RenderFillRect(renderer, &inputBox); // Render black box
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set color to white
+        SDL_RenderDrawRect(renderer, &inputBox); // Draw white border
+
+        SDL_Color hintColor = {128, 128, 128, 255}; 
         SDL_Surface *hintSurface = TTF_RenderText_Solid(font, "Name and Enter", hintColor);
         if (hintSurface) {
             SDL_Texture *hintTexture = SDL_CreateTextureFromSurface(renderer, hintSurface);
@@ -26,7 +28,7 @@ void RenderText(SDL_Renderer *renderer, TTF_Font *font) {
             SDL_FreeSurface(hintSurface);
             SDL_DestroyTexture(hintTexture);
         }
-
+        
         static int lastBlinkTime = 0;
         static bool showCursor = true;
         int currentTime = SDL_GetTicks();
@@ -45,17 +47,16 @@ void RenderText(SDL_Renderer *renderer, TTF_Font *font) {
     SDL_Color textColor = {255, 255, 255, 255};
     SDL_Surface *textSurface = TTF_RenderText_Solid(font, playerName.c_str(), textColor);
     if (!textSurface) return;
-    int textWidth = textSurface->w, textHeight = textSurface->h;
 
-    int boxWidth = std::max(minBoxWidth, std::min(maxBoxWidth, textWidth + 20));
-    boxX = 500 - boxWidth / 2;
+    SDL_Rect inputBox = {boxX, boxY, defaultBoxWidth, boxHeight};
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Set color to black
+    SDL_RenderFillRect(renderer, &inputBox); // Render black box
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_Rect inputBox = {boxX, boxY, boxWidth, boxHeight};
-    SDL_RenderFillRect(renderer, &inputBox);
+    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // Set color to white
+    SDL_RenderDrawRect(renderer, &inputBox); // Draw white border
 
     SDL_Texture *textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    SDL_Rect textRect = {boxX + 10, boxY + (boxHeight - textHeight) / 2, textWidth, textHeight};
+    SDL_Rect textRect = {boxX + 10, boxY + (boxHeight - textSurface->h) / 2, textSurface->w, textSurface->h};
     SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
     SDL_FreeSurface(textSurface);
     SDL_DestroyTexture(textTexture);
@@ -72,7 +73,7 @@ void RenderText(SDL_Renderer *renderer, TTF_Font *font) {
 
         if (showCursor) {
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-            SDL_Rect cursor = {textRect.x + textWidth + 1, textRect.y + 5, 2, textHeight - 12};
+            SDL_Rect cursor = {textRect.x + textSurface->w + 1, textRect.y + 5, 2, textSurface->h - 12};
             SDL_RenderFillRect(renderer, &cursor);
         }
     }

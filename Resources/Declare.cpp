@@ -36,6 +36,9 @@ SDL_Texture* Pause_Tutorial = nullptr;
 SDL_Texture* Restart_Tutorial = nullptr;
 SDL_Texture* Tutorial_Render = nullptr;
 SDL_Texture* Back_ground_tutorial = nullptr;
+SDL_Texture* Music_On = nullptr;
+SDL_Texture* Music_Off = nullptr;
+SDL_Texture* Restart_Game = nullptr;
 
 Mix_Music* music = nullptr;
 Mix_Music* music_win = nullptr;
@@ -46,6 +49,8 @@ Mix_Chunk* sound_click = nullptr;
 Mix_Chunk* sound_wrong_click = nullptr;
 Mix_Chunk* sound_correct_click = nullptr;
 Mix_Chunk* sound_error_click = nullptr;
+Mix_Chunk* Pikachu_lose = nullptr;
+Mix_Chunk* Pikachu_win = nullptr;
 
 std::string playerName = "";
 
@@ -56,6 +61,7 @@ int cnt = 0;
 int lastUpdateTime, startTime, start_pause;
 int save_color[1000];
 int next_game = 0;
+int music_check = 0;
 
 bool check[100][100];
 bool check_help = 0;
@@ -74,9 +80,9 @@ std::vector< std::vector<int> > board, save_board;
 std::vector < std::string > Time_present;
 std::string point = "";
 
-SDL_Rect buttonPlay = {300, 300, 400, 120};
-SDL_Rect buttonHelp = {300, 450, 400, 120};
-SDL_Rect buttonScore = {300, 600, 400, 120};
+SDL_Rect buttonPlay = {244, 300, 512, 115};
+SDL_Rect buttonHelp = {244, 445, 512, 121};
+SDL_Rect buttonScore = {244, 600, 512, 138};
 
 //Khai bao sound
 void Mix_FreeChunks()
@@ -114,7 +120,10 @@ void Declare_variable()
     rainbow = LoadTexture("Picture_game/rainbow.png", renderer);
     gameWin = LoadTexture("Picture_game/game_win.png", renderer);
     gameOver = LoadTexture("Picture_game/game_over.png", renderer);
-    RANK = LoadTexture("Picture/ranking.png", leaderboardRenderer);
+    RANK = LoadTexture("Picture_game/ranking.png", leaderboardRenderer);
+    Music_On = LoadTexture("Picture_game/music_on.png", renderer);
+    Music_Off = LoadTexture("Picture_game/music_off.png", renderer);
+    Restart_Game = LoadTexture("Picture_game/restart_game.png", renderer);
 
     music = Mix_LoadMUS("Music/background.mp3");
     music_background = Mix_LoadMUS("Music/start.mp3");
@@ -124,6 +133,8 @@ void Declare_variable()
     sound_error_click = Mix_LoadWAV("Sound/click-error.wav");
     sound_click = Mix_LoadWAV("Sound/select_click.wav");
     sound_wrong_click = Mix_LoadWAV("Sound/wrong.wav");
+    Pikachu_lose = Mix_LoadWAV("Sound/sound_lose_pikachu.wav");
+    Pikachu_win = Mix_LoadWAV("Sound/sound_win_pikachu.wav");
 
     for (int i = 1; i <= 40; i++) {
         std::string filename = "Picture_game/object_" + std::to_string(i) + ".png";
