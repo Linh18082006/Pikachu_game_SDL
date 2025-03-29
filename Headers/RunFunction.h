@@ -9,7 +9,7 @@ void FirstClick(int y, int x)
     first_click.s = (y - DISTANCE_W) / TILE_SIZE;
 }
 
-    void SecondClick(int y, int x)
+void SecondClick(int y, int x)
 {
     second_click.f = (x - DISTANCE_H) / TILE_SIZE;
     second_click.s = (y - DISTANCE_W) / TILE_SIZE;
@@ -60,6 +60,13 @@ std::vector<std::string> milliseconds_to_mmss(int milliseconds) {
     result.push_back(std::to_string(seconds % 10));
     
     return result;
+}
+
+void PlaySoundEffect(Mix_Chunk* sound, int volume) {
+    if (music_check == 0) { // Chỉ phát âm thanh nếu âm thanh đang bật
+        Mix_PlayChannel(-1, sound, 0);
+        Mix_VolumeChunk(sound, volume);
+    }
 }
 
 #endif

@@ -59,10 +59,13 @@ extern SDL_Texture* Back_ground_tutorial;
 extern SDL_Texture* Music_On;
 extern SDL_Texture* Music_Off;
 extern SDL_Texture* Restart_Game;
+extern SDL_Texture* plane_red;
+extern SDL_Texture* Start_game_image;
 
 extern Mix_Music* music;
 extern Mix_Music* music_win;
 extern Mix_Music* music_background;
+extern Mix_Chunk* Door_reverse;
 extern Mix_Chunk* plane_sound;
 extern Mix_Chunk* stone_sound;
 extern Mix_Chunk* sound_click;
@@ -71,6 +74,7 @@ extern Mix_Chunk* sound_correct_click;
 extern Mix_Chunk* sound_error_click;
 extern Mix_Chunk* Pikachu_lose;
 extern Mix_Chunk* Pikachu_win;
+extern Mix_Chunk* Door_sound;
 
 extern const int ROWS;
 extern const int COLS;
@@ -92,7 +96,13 @@ extern int cnt;
 extern int lastUpdateTime, startTime, start_pause;
 extern int save_color[1000];
 extern int next_game;
-extern int music_check;
+extern int music_check; 
+extern int plane_x; 
+extern int plane_red_x; 
+extern const int screen_end; 
+extern const int delay_between_planes;
+extern int before_menu;
+extern int start_game;
 
 extern bool check[100][100];
 extern bool check_help;
@@ -121,4 +131,4 @@ void Mix_FreeChunks();
 //Khai bao bien
 void Declare_variable();
 
-#endif 
+#endif

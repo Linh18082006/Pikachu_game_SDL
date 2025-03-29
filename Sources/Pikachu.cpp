@@ -11,12 +11,14 @@
 #include "Game_Play.h"
 #include "Win_game.h"
 #include "Lose_game.h"
+#include "menu_animation.h"
+#include "Start_game.h"
 
 const int DISTANCE_H = 180;
 const int DISTANCE_W = 100;
 const int TIMER_WIDTH = 900;
 const int TIMER_HEIGHT = 50;
-const int GAME_TIME = 1200000 + 2000;
+const int GAME_TIME = 1200000 + 4000;
 const int TILE_SIZE = 50;
 const int ROWS = 10;
 const int COLS = 16;
@@ -31,10 +33,11 @@ int main(int argc, char* argv[]) {
     Mix_VolumeMusic(50);
     SDL_Event events;
     while (isRunning) {
-        HandleEvents(events);
+        if(before_menu == 0) HandleEvents(events);
         
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
+
         SDL_RenderCopy(renderer, Back_ground_start, NULL, NULL);
         if(music_check == 0) {
             SDL_Rect tile = {950, 0, 50, 50};
@@ -44,34 +47,73 @@ int main(int argc, char* argv[]) {
             SDL_Rect tile = {950, 0, 30, 50};
             SDL_RenderCopy(renderer, Music_Off, NULL, &tile);
         }
+        menu_animation(renderer);
         SDL_RenderCopy(renderer, Button_Play, NULL, &buttonPlay);
         SDL_RenderCopy(renderer, Button_Help, NULL, &buttonHelp);
         SDL_RenderCopy(renderer, Button_Score, NULL, &buttonScore);
         RenderText(renderer, font_name);
+
+        if(before_menu == 1) {
+            PlaySoundEffect(Door_sound, 80);
+            Start_game(renderer);
+            if(start_game == 0) {
+                isRunning = 0; 
+            }
+        }
         SDL_RenderPresent(renderer);
         SDL_Delay(16);
     }
-
+    Mix_HaltChannel(-1); 
+    Mix_PauseMusic();
+    
+    Uint32 start_timeee = SDL_GetTicks(); 
+    Uint32 frameStart = SDL_GetTicks();
+    while (true) {
+        Uint32 currentTime = SDL_GetTicks();
+        if (currentTime - start_timeee >= 500) break;
+    
+        Start_game__(renderer);
+        SDL_RenderPresent(renderer);
+        SDL_Delay(16);
+    }
     Mix_PauseMusic();
     while((isRun == 0 && running == 1) || restart == 1){
-        Mix_PlayMusic(music, -1);
-        Mix_VolumeMusic(5);
+        int checkk = 0;
+        if(music_check == 0) {
+            Mix_PlayMusic(music, -1);
+            Mix_VolumeMusic(5);
+        }
+        
         InitBoard();
         restart = 0, next_game = 0;
         bool ktra = 0, needRender = 0, run = 0, run_first = 0;
         SDL_Event event;
 
-        startTime = SDL_GetTicks();
-
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
         SDL_RenderClear(renderer);
-        RenderBoard(save_cnt_wrong);
-        SDL_RenderPresent(renderer);
+        // RenderBoard(save_cnt_wrong);
+        // SDL_RenderPresent(renderer);
+        while(before_menu == 1) {
+            
+            checkk = 1;
+            if(start_game == -800) before_menu++;
+            PlaySoundEffect(Door_reverse, 80);
+            RenderBoard(save_cnt_wrong);
+            Start_game_(renderer);
+            SDL_RenderPresent(renderer);
+            SDL_Delay(16);
+        }
+        if(before_menu > 1) {
+            if(checkk == 0) RenderBoard(save_cnt_wrong);
+            SDL_RenderPresent(renderer);
+        }
+        startTime = SDL_GetTicks();
         Uint32 pauseStart = 0; 
         lastUpdateTime = SDL_GetTicks();
         save_cnt_wrong = 5;
         timee = 0;
-        while(save_cnt_wrong > -1 && running && next == 0){
+
+        while(before_menu > 1 && save_cnt_wrong > -1 && running && next == 0){
             ktra = 0;
             for(int i = 0; i < ROWS; ++i)
             {
@@ -100,13 +142,11 @@ int main(int argc, char* argv[]) {
                 else if (event.type == SDL_MOUSEBUTTONDOWN) {
                     if(cnt_pr % 2 == 1 && (event.button.x < 920 || event.button.x > 970 || event.button.y < 400 || event.button.y > 450))
                     {
-                        Mix_PlayChannel(-1, sound_error_click, 0);
-                        Mix_VolumeChunk(sound_error_click, 128);
+                        PlaySoundEffect(sound_error_click, 128);
                     }
                     else if(cnt_pr % 2 == 0 && cnt == 0 && event.button.x >= 100 && event.button.x <= 900 && event.button.y >= 180 && event.button.y <= 680)
                     {
-                        Mix_PlayChannel(-1, sound_click, 0);
-                        Mix_VolumeChunk(sound_click, 128);
+                        PlaySoundEffect(sound_click, 128);
                         FirstClick(event.button.x, event.button.y);
                         if(board[first_click.f][first_click.s] == -1) continue;
                         cnt++;
@@ -118,8 +158,7 @@ int main(int argc, char* argv[]) {
                     }
                     else if(cnt_pr % 2 == 0 && cnt == 1 && event.button.x >= 10 && event.button.x <= 900 && event.button.y >= 180 && event.button.y <= 680)
                     {
-                        Mix_PlayChannel(-1, sound_click, 0);
-                        Mix_VolumeChunk(sound_click, 128);
+                        PlaySoundEffect(sound_click, 128);
                         bool check_change = 0;
                         pauseStart = SDL_GetTicks();
                         while(check_change == 0){

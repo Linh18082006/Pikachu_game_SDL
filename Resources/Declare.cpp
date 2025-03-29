@@ -39,10 +39,13 @@ SDL_Texture* Back_ground_tutorial = nullptr;
 SDL_Texture* Music_On = nullptr;
 SDL_Texture* Music_Off = nullptr;
 SDL_Texture* Restart_Game = nullptr;
+SDL_Texture* plane_red = nullptr;
+SDL_Texture* Start_game_image = nullptr;
 
 Mix_Music* music = nullptr;
 Mix_Music* music_win = nullptr;
 Mix_Music* music_background = nullptr;
+Mix_Chunk* Door_reverse = nullptr;
 Mix_Chunk* plane_sound = nullptr;
 Mix_Chunk* stone_sound = nullptr;
 Mix_Chunk* sound_click = nullptr;
@@ -51,6 +54,7 @@ Mix_Chunk* sound_correct_click = nullptr;
 Mix_Chunk* sound_error_click = nullptr;
 Mix_Chunk* Pikachu_lose = nullptr;
 Mix_Chunk* Pikachu_win = nullptr;
+Mix_Chunk* Door_sound = nullptr;
 
 std::string playerName = "";
 
@@ -62,6 +66,12 @@ int lastUpdateTime, startTime, start_pause;
 int save_color[1000];
 int next_game = 0;
 int music_check = 0;
+int plane_x = -200;
+int plane_red_x = -200; 
+const int screen_end = 1000; 
+const int delay_between_planes = 70; 
+int before_menu = 0;
+int start_game = -800;
 
 bool check[100][100];
 bool check_help = 0;
@@ -124,9 +134,12 @@ void Declare_variable()
     Music_On = LoadTexture("Picture_game/music_on.png", renderer);
     Music_Off = LoadTexture("Picture_game/music_off.png", renderer);
     Restart_Game = LoadTexture("Picture_game/restart_game.png", renderer);
+    plane_red = LoadTexture("Picture_game/plane_red.png", renderer);
+    Start_game_image = LoadTexture("Picture_game/start_game.png", renderer);
 
     music = Mix_LoadMUS("Music/background.mp3");
     music_background = Mix_LoadMUS("Music/start.mp3");
+    Door_reverse = Mix_LoadWAV("Sound/door_sound_reverse.wav");
     plane_sound = Mix_LoadWAV("Sound/plane_sound.wav");
     stone_sound = Mix_LoadWAV("Sound/stone_sound.wav");
     sound_correct_click = Mix_LoadWAV("Sound/correct.wav");;
@@ -135,6 +148,7 @@ void Declare_variable()
     sound_wrong_click = Mix_LoadWAV("Sound/wrong.wav");
     Pikachu_lose = Mix_LoadWAV("Sound/sound_lose_pikachu.wav");
     Pikachu_win = Mix_LoadWAV("Sound/sound_win_pikachu.wav");
+    Door_sound = Mix_LoadWAV("Sound/door_sound.wav");
 
     for (int i = 1; i <= 40; i++) {
         std::string filename = "Picture_game/object_" + std::to_string(i) + ".png";

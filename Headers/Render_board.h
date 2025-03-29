@@ -17,7 +17,11 @@ void RenderBoard(int time_wrong) {
     }
     else elapsedTime = lastUpdateTime;
 
-    Time_present = milliseconds_to_mmss(1200000 - elapsedTime);
+    if(before_menu == 1) {
+        Time_present = milliseconds_to_mmss(1200000);
+        elapsedTime = 0;
+    }
+    else Time_present = milliseconds_to_mmss(1200000 - elapsedTime);
 
     float progress = (float)elapsedTime / GAME_TIME; 
     int currentWidth = (int)(progress * TIMER_WIDTH);

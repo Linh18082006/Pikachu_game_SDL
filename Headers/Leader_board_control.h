@@ -32,7 +32,7 @@ void HandleEvents(SDL_Event &event) {
                 {
                     Mix_PlayChannel(-1, sound_click, 0);
                     Mix_VolumeChunk(sound_click, 128);
-                    isRunning = false;  
+                    before_menu ++;
                 }
                 else
                 {
@@ -45,10 +45,12 @@ void HandleEvents(SDL_Event &event) {
                 Mix_VolumeChunk(sound_click, 128);
                 if (music_check == 0) {
                     Mix_PauseMusic();
+                    Mix_Volume(-1, 0); // Tắt toàn bộ hiệu ứng âm thanh
                     music_check = 1;
                 }
                 else {
                     Mix_ResumeMusic();
+                    Mix_Volume(-1, 128); // Bật lại toàn bộ hiệu ứng âm thanh
                     music_check = 0;
                 }
             }
